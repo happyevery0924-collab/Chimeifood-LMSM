@@ -1,0 +1,5 @@
+{
+  "name": "奇美食品教育訓練平台",
+  "description": "奇美食品員工專屬的教育訓練入口網站，提供課程報名、現場簽到，並整合 Looker Studio 報表。",
+  "requestFramePermissions": []
+}
