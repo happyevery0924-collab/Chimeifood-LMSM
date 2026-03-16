@@ -16,7 +16,7 @@ const RegistrationListPage = () => {
     <div className="p-6 flex flex-col h-full">
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-slate-800 mb-2">報名清單查詢</h2>
-        <p className="text-slate-500">依課程檢視所有已報名或已簽到的學員名單。</p>
+        <p className="text-slate-500">依課程檢視所有已報名的學員名單。</p>
       </div>
 
       <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm mb-6">
@@ -74,15 +74,9 @@ const RegistrationListPage = () => {
                     <td className="py-3 px-5 text-slate-700 font-mono">{record.employeeId}</td>
                     <td className="py-3 px-5 font-medium text-slate-900">{record.name}</td>
                     <td className="py-3 px-5">
-                      {record.status === 'signed_in' ? (
-                        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800">
-                          <CheckCircle size={12} /> 已簽到
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-100 text-blue-800">
-                          <Clock size={12} /> 已報名
-                        </span>
-                      )}
+                      <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-100 text-blue-800">
+                        <Clock size={12} /> 已報名
+                      </span>
                     </td>
                     <td className="py-3 px-5 text-sm text-slate-500">
                       {new Date(record.timestamp).toLocaleString()}

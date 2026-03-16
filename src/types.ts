@@ -30,6 +30,6 @@ export interface Registration {
   employeeId: string;
   name: string;
   courseId: string;
-  status: 'registered' | 'signed_in';
+  status: 'registered';
   timestamp: string;
 }

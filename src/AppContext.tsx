@@ -7,9 +7,9 @@ interface AppContextType {
   setCurrentUser: (user: User) => void;
   courses: Course[];
   addCourse: (course: Course) => void;
+  deleteCourse: (courseId: string) => void;
   registrations: Registration[];
   registerCourse: (courseId: string, data: { department: string; employeeId: string; name: string }) => void;
-  signInCourse: (courseId: string, employeeId: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -21,6 +21,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const addCourse = (course: Course) => {
     setCourses([...courses, course]);
+  };
+
+  const deleteCourse = (courseId: string) => {
+    setCourses(courses.filter(c => c.id !== courseId));
   };
 
   const registerCourse = (courseId: string, data: { department: string; employeeId: string; name: string }) => {
@@ -36,16 +40,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     setRegistrations([...registrations, newReg]);
   };
 
-  const signInCourse = (courseId: string, employeeId: string) => {
-    setRegistrations(prev =>
-      prev.map(reg =>
-        reg.courseId === courseId && reg.employeeId === employeeId
-          ? { ...reg, status: 'signed_in', timestamp: new Date().toISOString() }
-          : reg
-      )
-    );
-  };
-
   return (
     <AppContext.Provider
       value={{
@@ -53,9 +47,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setCurrentUser,
         courses,
         addCourse,
+        deleteCourse,
         registrations,
         registerCourse,
-        signInCourse,
       }}
     >
       {children}
