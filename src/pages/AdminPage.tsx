@@ -31,8 +31,8 @@ const AdminPage = () => {
       id: `C${Date.now()}`,
       title,
       category,
-      date: category.includes('physical') ? date : undefined,
-      endDate: category.includes('physical') && endDate ? endDate : undefined,
+      date: date || undefined,
+      endDate: endDate || undefined,
       time: time || undefined,
       location: location || undefined,
       link: link || undefined,
@@ -115,60 +115,55 @@ const AdminPage = () => {
           />
         </div>
 
-        {(category === 'external_physical' || category === 'internal_physical') && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">開始日期 *</label>
-              <input
-                type="date"
-                required
-                value={date}
-                onChange={e => setDate(e.target.value)}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">結束日期 (選填)</label>
-              <input
-                type="date"
-                value={endDate}
-                onChange={e => setEndDate(e.target.value)}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">課程時間</label>
-              <input
-                type="text"
-                value={time}
-                onChange={e => setTime(e.target.value)}
-                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
-                placeholder="例如：14:00 - 16:00"
-              />
-            </div>
-          </div>
-        )}
-
-        {(category === 'external_physical' || category === 'internal_physical') && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">課程地點</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">開始日期 *</label>
             <input
-              type="text"
-              value={location}
-              onChange={e => setLocation(e.target.value)}
+              type="date"
+              required
+              value={date}
+              onChange={e => setDate(e.target.value)}
               className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
-              placeholder="例如：總部 3F 會議室"
             />
           </div>
-        )}
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">結束日期 (選填)</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={e => setEndDate(e.target.value)}
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1">課程時間</label>
+            <input
+              type="text"
+              value={time}
+              onChange={e => setTime(e.target.value)}
+              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+              placeholder="例如：14:00 - 16:00"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-1">課程地點</label>
+          <input
+            type="text"
+            value={location}
+            onChange={e => setLocation(e.target.value)}
+            className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"
+            placeholder="例如：總部 3F 會議室"
+          />
+        </div>
 
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">
-            {category.includes('online') || category.includes('digital') ? '課程連結 *' : '詳細網址 (選填)'}
+            課程連結 (選填)
           </label>
           <input
             type="url"
-            required={category.includes('online') || category.includes('digital')}
             value={link}
             onChange={e => setLink(e.target.value)}
             className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition-all"

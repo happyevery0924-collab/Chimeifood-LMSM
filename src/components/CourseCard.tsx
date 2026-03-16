@@ -200,10 +200,10 @@ const CourseCard: React.FC<Props> = ({ course }) => {
             <span>{course.time}</span>
           </div>
         )}
-        {(course.location || course.category === 'external_physical' || course.category === 'internal_physical') && (
+        {course.location && (
           <div className="flex items-center gap-2 text-sm text-slate-500">
             <MapPin size={16} />
-            <span>{course.location || '實體課程'}</span>
+            <span>{course.location}</span>
           </div>
         )}
         {course.link && (
