@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useAppContext } from '../AppContext';
 import { BookOpen, Users, CheckCircle, Clock } from 'lucide-react';
-import { MOCK_USERS } from '../data';
 
 const RegistrationListPage = () => {
   const { courses, registrations } = useAppContext();

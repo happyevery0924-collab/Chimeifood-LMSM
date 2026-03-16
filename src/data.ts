@@ -1,8 +1,8 @@
 import { Course, User, Registration } from './types';
 
 export const MOCK_USERS: User[] = [
-  { id: 'GUEST', name: '一般使用者', role: 'employee' },
-  { id: 'A001', name: '系統管理員', role: 'admin' },
+  { id: 'GUEST', name: '一般使用者', email: 'guest@example.com', role: 'employee' },
+  { id: 'A001', name: '系統管理員', email: 'admin@example.com', role: 'admin' },
 ];
 
 export const MOCK_COURSES: Course[] = [
@@ -57,5 +57,6 @@ export const MOCK_REGISTRATIONS: Registration[] = [
     courseId: 'C004',
     status: 'registered',
     timestamp: new Date().toISOString(),
+    userId: 'GUEST',
   },
 ];

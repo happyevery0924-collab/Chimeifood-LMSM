@@ -1,0 +1,135 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: courses
+    // Document ID: auto-generated
+    // Fields:
+    //   - title: string (required, < 100 chars)
+    //   - category: string (required, enum)
+    //   - date: string (optional, < 20 chars)
+    //   - endDate: string (optional, < 20 chars)
+    //   - time: string (optional, < 50 chars)
+    //   - location: string (optional, < 100 chars)
+    //   - link: string (optional, < 500 chars)
+    //   - description: string (required, < 5000 chars)
+    //
+    // Collection: registrations
+    // Document ID: auto-generated
+    // Fields:
+    //   - department: string (required, < 100 chars)
+    //   - employeeId: string (required, < 50 chars)
+    //   - name: string (required, < 100 chars)
+    //   - courseId: string (required, < 50 chars)
+    //   - status: string (required, 'registered')
+    //   - timestamp: string (required, < 50 chars)
+    //   - userId: string (required, matches auth.uid)
+    //
+    // Collection: users
+    // Document ID: user's uid
+    // Fields:
+    //   - name: string (required, < 100 chars)
+    //   - email: string (required, < 100 chars)
+    //   - role: string (required, 'employee' or 'admin')
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "happyevery0924@gmail.com" && request.auth.token.email_verified == true));
+    }
+    
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+    
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+    
+    function isValidOptionalString(field, minLen, maxLen) {
+      return !('field' in request.resource.data) ||
+             (request.resource.data[field] is string &&
+              request.resource.data[field].size() >= minLen &&
+              request.resource.data[field].size() <= maxLen);
+    }
+    
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+    
+    function isValidCourse(data) {
+      return hasOnlyAllowedFields(['title', 'category', 'date', 'endDate', 'time', 'location', 'link', 'description']) &&
+             hasRequiredFields(['title', 'category', 'description']) &&
+             data.title is string && data.title.size() > 0 && data.title.size() < 100 &&
+             data.category in ['external_physical', 'external_online', 'internal_digital', 'internal_physical'] &&
+             data.description is string && data.description.size() > 0 && data.description.size() < 5000 &&
+             (!('date' in data) || (data.date is string && data.date.size() < 20)) &&
+             (!('endDate' in data) || (data.endDate is string && data.endDate.size() < 20)) &&
+             (!('time' in data) || (data.time is string && data.time.size() < 50)) &&
+             (!('location' in data) || (data.location is string && data.location.size() < 100)) &&
+             (!('link' in data) || (data.link is string && data.link.size() < 500));
+    }
+    
+    function isValidRegistration(data) {
+      return hasOnlyAllowedFields(['department', 'employeeId', 'name', 'courseId', 'status', 'timestamp', 'userId']) &&
+             hasRequiredFields(['department', 'employeeId', 'name', 'courseId', 'status', 'timestamp', 'userId']) &&
+             data.department is string && data.department.size() > 0 && data.department.size() < 100 &&
+             data.employeeId is string && data.employeeId.size() > 0 && data.employeeId.size() < 50 &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.courseId is string && data.courseId.size() > 0 && data.courseId.size() < 50 &&
+             data.status == 'registered' &&
+             data.timestamp is string && data.timestamp.size() > 0 && data.timestamp.size() < 50 &&
+             data.userId == request.auth.uid;
+    }
+    
+    function isValidUser(data) {
+      return hasOnlyAllowedFields(['name', 'email', 'role']) &&
+             hasRequiredFields(['name', 'email', 'role']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 100 &&
+             data.email is string && data.email.size() > 0 && data.email.size() < 100 &&
+             data.role in ['employee', 'admin'];
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /courses/{courseId} {
+      allow read: if isAuthenticated();
+      allow create: if isAdmin() && isValidCourse(request.resource.data);
+      allow update: if isAdmin() && isValidCourse(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /registrations/{registrationId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidRegistration(request.resource.data);
+      allow update: if isAuthenticated() && isValidRegistration(request.resource.data) && request.auth.uid == resource.data.userId && request.resource.data.userId == resource.data.userId;
+      allow delete: if isAuthenticated() && (request.auth.uid == resource.data.userId || isAdmin());
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow create: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == 'employee' || isAdmin());
+      allow update: if isAuthenticated() && isOwner(userId) && isValidUser(request.resource.data) && (request.resource.data.role == resource.data.role || isAdmin());
+    }
+  }
+}

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { AppProvider, useAppContext } from './AppContext';
-import { MOCK_USERS } from './data';
-import { BookOpen, User as UserIcon, Settings, LogOut, Users } from 'lucide-react';
+import { BookOpen, User as UserIcon, Settings, LogOut, Users, LogIn } from 'lucide-react';
 import HomePage from './pages/HomePage';
 import MyRecordsPage from './pages/MyRecordsPage';
 import AdminPage from './pages/AdminPage';
@@ -11,16 +10,37 @@ import PolicyPage from './pages/PolicyPage';
 type Tab = 'home' | 'records' | 'admin' | 'registration_list' | 'policy';
 
 const AppContent = () => {
-  const { currentUser, setCurrentUser } = useAppContext();
+  const { currentUser, isAuthReady, login, logout } = useAppContext();
   const [activeTab, setActiveTab] = useState<Tab>('home');
 
-  const handleRoleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const user = MOCK_USERS.find(u => u.id === e.target.value);
-    if (user) {
-      setCurrentUser(user);
-      setActiveTab('home');
-    }
-  };
+  if (!isAuthReady) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="text-slate-500">載入中...</div>
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <div className="bg-white p-8 rounded-2xl shadow-sm max-w-md w-full text-center">
+          <div className="bg-orange-500 text-white p-3 rounded-xl inline-flex mb-4">
+            <BookOpen size={32} />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-800 mb-2">奇美食品教育訓練平台</h1>
+          <p className="text-slate-600 mb-8">請登入以繼續使用系統</p>
+          <button
+            onClick={login}
+            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-medium py-3 px-4 rounded-xl transition-colors flex items-center justify-center gap-2"
+          >
+            <LogIn size={20} />
+            使用 Google 帳號登入
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 flex flex-col">
@@ -35,18 +55,16 @@ const AppContent = () => {
           </div>
           
           <div className="flex items-center gap-4">
-            <div className="text-sm text-slate-500">
-              切換視角 (Demo):
+            <div className="text-sm text-slate-600 font-medium">
+              {currentUser.name} ({currentUser.role === 'admin' ? '管理員' : '員工'})
             </div>
-            <select 
-              value={currentUser.id}
-              onChange={handleRoleChange}
-              className="border border-slate-300 rounded-md px-3 py-1.5 text-sm bg-slate-50 focus:ring-orange-500 focus:border-orange-500"
+            <button
+              onClick={logout}
+              className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg transition-colors"
+              title="登出"
             >
-              {MOCK_USERS.map(u => (
-                <option key={u.id} value={u.id}>{u.name}</option>
-              ))}
-            </select>
+              <LogOut size={20} />
+            </button>
           </div>
         </div>
       </header>

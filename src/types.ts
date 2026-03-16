@@ -21,6 +21,7 @@ export interface Course {
 export interface User {
   id: string;
   name: string;
+  email: string;
   role: Role;
 }
 
@@ -32,4 +33,5 @@ export interface Registration {
   courseId: string;
   status: 'registered';
   timestamp: string;
+  userId: string;
 }
