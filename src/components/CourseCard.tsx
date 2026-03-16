@@ -36,74 +36,56 @@ const CourseCard: React.FC<Props> = ({ course }) => {
       );
     }
 
-    switch (course.category) {
-      case 'external_physical':
-        return (
-          <div className="flex gap-3">
-            <button
-              onClick={() => setShowForm('register')}
-              className="flex-1 py-2.5 rounded-lg font-medium bg-orange-500 hover:bg-orange-600 text-white shadow-sm transition-colors"
-            >
-              報名課程
-            </button>
-            {course.link && (
-              <a
-                href={course.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 py-2.5 rounded-lg font-medium border border-slate-200 text-slate-700 hover:bg-slate-50 flex items-center justify-center gap-2 transition-colors"
-              >
-                詳細網址 <ExternalLink size={16} />
-              </a>
-            )}
-          </div>
-        );
-      case 'external_online':
+    const getLinkButton = () => {
+      if (!course.link) return null;
+      
+      if (course.category === 'external_online') {
         return (
           <a
             href={course.link}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full py-2.5 rounded-lg font-medium bg-blue-50 hover:bg-blue-100 text-blue-700 flex items-center justify-center gap-2 transition-colors"
+            className="flex-1 py-2.5 rounded-lg font-medium bg-blue-50 hover:bg-blue-100 text-blue-700 flex items-center justify-center gap-2 transition-colors"
           >
             前往學習 <ExternalLink size={16} />
           </a>
         );
-      case 'internal_digital':
+      }
+      if (course.category === 'internal_digital') {
         return (
           <a
             href={course.link}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full py-2.5 rounded-lg font-medium bg-emerald-50 hover:bg-emerald-100 text-emerald-700 flex items-center justify-center gap-2 transition-colors"
+            className="flex-1 py-2.5 rounded-lg font-medium bg-emerald-50 hover:bg-emerald-100 text-emerald-700 flex items-center justify-center gap-2 transition-colors"
           >
             開始學習 <PlayCircle size={16} />
           </a>
         );
-      case 'internal_physical':
-        return (
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={() => setShowForm('register')}
-              className="w-full py-2.5 rounded-lg font-medium bg-orange-500 hover:bg-orange-600 text-white shadow-sm transition-colors"
-            >
-              報名課程
-            </button>
-            {course.link && (
-              <a
-                href={course.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-2.5 rounded-lg font-medium border border-slate-200 text-slate-700 hover:bg-slate-50 flex items-center justify-center gap-2 transition-colors"
-              >
-                詳細網址 <ExternalLink size={16} />
-              </a>
-            )}
-          </div>
-        );
-      default:
-        return null;
-    }
+      }
+      return (
+        <a
+          href={course.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 py-2.5 rounded-lg font-medium border border-slate-200 text-slate-700 hover:bg-slate-50 flex items-center justify-center gap-2 transition-colors"
+        >
+          詳細網址 <ExternalLink size={16} />
+        </a>
+      );
+    };
+
+    return (
+      <div className="flex gap-3">
+        <button
+          onClick={() => setShowForm('register')}
+          className="flex-1 py-2.5 rounded-lg font-medium bg-orange-500 hover:bg-orange-600 text-white shadow-sm transition-colors"
+        >
+          報名課程
+        </button>
+        {getLinkButton()}
+      </div>
+    );
   };
 
   const getCategoryLabel = () => {
@@ -180,45 +162,58 @@ const CourseCard: React.FC<Props> = ({ course }) => {
         </span>
       </div>
       
-      <h3 className="text-lg font-bold text-slate-900 mb-2 leading-tight">{course.title}</h3>
-      <p className="text-sm text-slate-600 mb-4 flex-1">{course.description}</p>
+      <div className="mb-4">
+        <span className="text-xs font-medium text-slate-500 mb-1 block">課程名稱：</span>
+        <h3 className="text-lg font-bold text-slate-900 leading-tight">{course.title}</h3>
+      </div>
       
-      <div className="space-y-2 mb-6">
-        <div className="flex items-center gap-2 text-sm text-slate-500">
-          <Users size={16} />
-          <span>已報名：{registeredCount} 人</span>
+      <div className="mb-4 flex-1">
+        <span className="text-xs font-medium text-slate-500 mb-1 block">課程說明：</span>
+        <p className="text-sm text-slate-600">{course.description}</p>
+      </div>
+      
+      <div className="space-y-2 mb-6 bg-slate-50 p-3 rounded-lg">
+        <div className="flex items-center gap-2 text-sm text-slate-600">
+          <Users size={16} className="shrink-0 text-slate-400" />
+          <span className="font-medium shrink-0">已報名：</span>
+          <span>{registeredCount} 人</span>
         </div>
-        {course.date && (
-          <div className="flex items-center gap-2 text-sm text-slate-500">
-            <Calendar size={16} />
-            <span>{course.date}{course.endDate ? ` ~ ${course.endDate}` : ''}</span>
-          </div>
-        )}
-        {course.time && (
-          <div className="flex items-center gap-2 text-sm text-slate-500">
-            <Clock size={16} />
-            <span>{course.time}</span>
-          </div>
-        )}
-        {course.location && (
-          <div className="flex items-center gap-2 text-sm text-slate-500">
-            <MapPin size={16} />
-            <span>{course.location}</span>
-          </div>
-        )}
-        {course.link && (
-          <div className="flex items-start gap-2 text-sm text-slate-500">
-            <LinkIcon size={16} className="mt-0.5 shrink-0" />
+        <div className="flex items-center gap-2 text-sm text-slate-600">
+          <Calendar size={16} className="shrink-0 text-slate-400" />
+          <span className="font-medium shrink-0">開始日期：</span>
+          <span>{course.date || '-'}</span>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-slate-600">
+          <Calendar size={16} className="shrink-0 text-slate-400" />
+          <span className="font-medium shrink-0">結束日期：</span>
+          <span>{course.endDate || '-'}</span>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-slate-600">
+          <Clock size={16} className="shrink-0 text-slate-400" />
+          <span className="font-medium shrink-0">課程時間：</span>
+          <span>{course.time || '-'}</span>
+        </div>
+        <div className="flex items-center gap-2 text-sm text-slate-600">
+          <MapPin size={16} className="shrink-0 text-slate-400" />
+          <span className="font-medium shrink-0">課程地點：</span>
+          <span>{course.location || '-'}</span>
+        </div>
+        <div className="flex items-start gap-2 text-sm text-slate-600">
+          <LinkIcon size={16} className="mt-0.5 shrink-0 text-slate-400" />
+          <span className="font-medium shrink-0">課程連結：</span>
+          {course.link ? (
             <a 
               href={course.link} 
               target="_blank" 
               rel="noopener noreferrer"
-              className="text-blue-600 hover:text-blue-800 hover:underline break-all line-clamp-2"
+              className="text-blue-600 hover:text-blue-800 hover:underline break-all line-clamp-1"
             >
               {course.link}
             </a>
-          </div>
-        )}
+          ) : (
+            <span>-</span>
+          )}
+        </div>
       </div>
 
       <div className="mt-auto pt-4 border-t border-slate-100">
