@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { User, Course, Registration } from './types';
 import { MOCK_USERS, MOCK_COURSES, MOCK_REGISTRATIONS } from './data';
 
@@ -16,8 +16,38 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [currentUser, setCurrentUser] = useState<User>(MOCK_USERS[0]);
-  const [courses, setCourses] = useState<Course[]>(MOCK_COURSES);
-  const [registrations, setRegistrations] = useState<Registration[]>(MOCK_REGISTRATIONS);
+  
+  const [courses, setCourses] = useState<Course[]>(() => {
+    const savedCourses = localStorage.getItem('app_courses');
+    if (savedCourses) {
+      try {
+        return JSON.parse(savedCourses);
+      } catch (e) {
+        console.error('Failed to parse courses from localStorage', e);
+      }
+    }
+    return MOCK_COURSES;
+  });
+
+  const [registrations, setRegistrations] = useState<Registration[]>(() => {
+    const savedRegistrations = localStorage.getItem('app_registrations');
+    if (savedRegistrations) {
+      try {
+        return JSON.parse(savedRegistrations);
+      } catch (e) {
+        console.error('Failed to parse registrations from localStorage', e);
+      }
+    }
+    return MOCK_REGISTRATIONS;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('app_courses', JSON.stringify(courses));
+  }, [courses]);
+
+  useEffect(() => {
+    localStorage.setItem('app_registrations', JSON.stringify(registrations));
+  }, [registrations]);
 
   const addCourse = (course: Course) => {
     setCourses([...courses, course]);
