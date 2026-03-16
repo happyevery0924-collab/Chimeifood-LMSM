@@ -48,7 +48,7 @@ const HomePage = () => {
             filter === 'internal_digital' ? 'bg-emerald-600 text-white' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
           }`}
         >
-          內部數位
+          內部數位學習平台
         </button>
         <button
           onClick={() => setFilter('internal_physical')}

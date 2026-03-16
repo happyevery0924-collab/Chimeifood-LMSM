@@ -98,7 +98,7 @@ const AdminPage = () => {
           >
             <option value="external_physical">外部實體</option>
             <option value="external_online">外部線上</option>
-            <option value="internal_digital">內部數位</option>
+            <option value="internal_digital">內部數位學習平台</option>
             <option value="internal_physical">內部實體</option>
           </select>
         </div>
@@ -222,7 +222,7 @@ const AdminPage = () => {
                       <td className="p-4 text-slate-600 text-sm">
                         {course.category === 'external_physical' && '外部實體'}
                         {course.category === 'external_online' && '外部線上'}
-                        {course.category === 'internal_digital' && '內部數位'}
+                        {course.category === 'internal_digital' && '內部數位學習平台'}
                         {course.category === 'internal_physical' && '內部實體'}
                       </td>
                       <td className="p-4 text-slate-600 text-sm">

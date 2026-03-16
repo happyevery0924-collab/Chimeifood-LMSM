@@ -92,7 +92,7 @@ const CourseCard: React.FC<Props> = ({ course }) => {
     switch (course.category) {
       case 'external_physical': return { text: '外部實體', color: 'bg-orange-100 text-orange-800' };
       case 'external_online': return { text: '外部線上', color: 'bg-blue-100 text-blue-800' };
-      case 'internal_digital': return { text: '內部數位', color: 'bg-emerald-100 text-emerald-800' };
+      case 'internal_digital': return { text: '內部數位學習平台', color: 'bg-emerald-100 text-emerald-800' };
       case 'internal_physical': return { text: '內部實體', color: 'bg-purple-100 text-purple-800' };
     }
   };
