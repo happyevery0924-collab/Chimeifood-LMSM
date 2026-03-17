@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useAppContext } from '../AppContext';
 import CourseCard from '../components/CourseCard';
-import { CourseCategory } from '../types';
 
 const HomePage = () => {
-  const { courses } = useAppContext();
-  const [filter, setFilter] = useState<CourseCategory | 'all'>('all');
+  const { courses, homeFilter, setHomeFilter } = useAppContext();
 
-  const filteredCourses = filter === 'all' ? courses : courses.filter(c => c.category === filter);
+  const filteredCourses = homeFilter === 'all' ? courses : courses.filter(c => c.category === homeFilter);
 
   return (
     <div className="p-6">
@@ -19,41 +17,41 @@ const HomePage = () => {
       {/* Filters */}
       <div className="flex flex-wrap gap-2 mb-8">
         <button
-          onClick={() => setFilter('all')}
+          onClick={() => setHomeFilter('all')}
           className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-            filter === 'all' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            homeFilter === 'all' ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
           }`}
         >
           全部課程
         </button>
         <button
-          onClick={() => setFilter('external_physical')}
+          onClick={() => setHomeFilter('external_physical')}
           className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-            filter === 'external_physical' ? 'bg-orange-600 text-white' : 'bg-orange-50 text-orange-700 hover:bg-orange-100'
+            homeFilter === 'external_physical' ? 'bg-orange-600 text-white' : 'bg-orange-50 text-orange-700 hover:bg-orange-100'
           }`}
         >
           外部實體
         </button>
         <button
-          onClick={() => setFilter('external_online')}
+          onClick={() => setHomeFilter('external_online')}
           className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-            filter === 'external_online' ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
+            homeFilter === 'external_online' ? 'bg-blue-600 text-white' : 'bg-blue-50 text-blue-700 hover:bg-blue-100'
           }`}
         >
           外部線上
         </button>
         <button
-          onClick={() => setFilter('internal_digital')}
+          onClick={() => setHomeFilter('internal_digital')}
           className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-            filter === 'internal_digital' ? 'bg-emerald-600 text-white' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+            homeFilter === 'internal_digital' ? 'bg-emerald-600 text-white' : 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
           }`}
         >
           內部數位學習平台
         </button>
         <button
-          onClick={() => setFilter('internal_physical')}
+          onClick={() => setHomeFilter('internal_physical')}
           className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-            filter === 'internal_physical' ? 'bg-purple-600 text-white' : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
+            homeFilter === 'internal_physical' ? 'bg-purple-600 text-white' : 'bg-purple-50 text-purple-700 hover:bg-purple-100'
           }`}
         >
           內部實體

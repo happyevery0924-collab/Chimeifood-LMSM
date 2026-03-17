@@ -4,8 +4,7 @@ import { CourseCategory, Course } from '../types';
 import { PlusCircle, CheckCircle2, Trash2, List, Settings } from 'lucide-react';
 
 const AdminPage = () => {
-  const { currentUser, courses, addCourse, deleteCourse } = useAppContext();
-  const [activeTab, setActiveTab] = useState<'create' | 'manage'>('create');
+  const { currentUser, courses, addCourse, deleteCourse, adminTab, setAdminTab } = useAppContext();
   const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState<CourseCategory>('external_physical');
@@ -59,18 +58,18 @@ const AdminPage = () => {
         </div>
         <div className="flex bg-slate-100 p-1 rounded-lg">
           <button
-            onClick={() => setActiveTab('create')}
+            onClick={() => setAdminTab('create')}
             className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              activeTab === 'create' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              adminTab === 'create' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <PlusCircle size={16} />
             課程上架
           </button>
           <button
-            onClick={() => setActiveTab('manage')}
+            onClick={() => setAdminTab('manage')}
             className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              activeTab === 'manage' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
+              adminTab === 'manage' ? 'bg-white text-orange-600 shadow-sm' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
             <Settings size={16} />
@@ -79,7 +78,7 @@ const AdminPage = () => {
         </div>
       </div>
 
-      {activeTab === 'create' && (
+      {adminTab === 'create' && (
         <>
           {successMsg && (
             <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl flex items-center gap-3">
@@ -196,7 +195,7 @@ const AdminPage = () => {
         </>
       )}
 
-      {activeTab === 'manage' && (
+      {adminTab === 'manage' && (
         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">

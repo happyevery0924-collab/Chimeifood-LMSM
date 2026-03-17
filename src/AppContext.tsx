@@ -1,190 +1,184 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { User, Course, Registration } from './types';
-import { db, auth } from './firebase';
-import { collection, onSnapshot, doc, setDoc, deleteDoc, getDoc } from 'firebase/firestore';
-import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
+import { User, Course, Registration, CourseCategory } from './types';
+import { MOCK_USERS, MOCK_COURSES, MOCK_REGISTRATIONS } from './data';
+import { io, Socket } from 'socket.io-client';
+
+export type Tab = 'home' | 'records' | 'admin' | 'registration_list' | 'policy';
 
 interface AppContextType {
-  currentUser: User | null;
-  isAuthReady: boolean;
-  login: () => Promise<void>;
-  logout: () => Promise<void>;
+  currentUser: User;
+  setCurrentUser: (user: User) => void;
+  activeTab: Tab;
+  setActiveTab: (tab: Tab) => void;
+  homeFilter: CourseCategory | 'all';
+  setHomeFilter: (filter: CourseCategory | 'all') => void;
+  selectedCourseId: string;
+  setSelectedCourseId: (id: string) => void;
+  adminTab: 'create' | 'manage';
+  setAdminTab: (tab: 'create' | 'manage') => void;
   courses: Course[];
-  addCourse: (course: Course) => Promise<void>;
-  deleteCourse: (courseId: string) => Promise<void>;
+  addCourse: (course: Course) => void;
+  deleteCourse: (courseId: string) => void;
   registrations: Registration[];
-  registerCourse: (courseId: string, data: { department: string; employeeId: string; name: string }) => Promise<void>;
+  registerCourse: (courseId: string, data: { department: string; employeeId: string; name: string }) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
-enum OperationType {
-  CREATE = 'create',
-  UPDATE = 'update',
-  DELETE = 'delete',
-  LIST = 'list',
-  GET = 'get',
-  WRITE = 'write',
-}
-
-interface FirestoreErrorInfo {
-  error: string;
-  operationType: OperationType;
-  path: string | null;
-  authInfo: any;
-}
-
-function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
-  const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
-    authInfo: {
-      userId: auth.currentUser?.uid,
-      email: auth.currentUser?.email,
-    },
-    operationType,
-    path
-  };
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
-}
-
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [isAuthReady, setIsAuthReady] = useState(false);
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [registrations, setRegistrations] = useState<Registration[]>([]);
+  const [currentUser, setCurrentUser] = useState<User>(MOCK_USERS[0]);
+  const [activeTab, setActiveTab] = useState<Tab>('home');
+  const [homeFilter, setHomeFilter] = useState<CourseCategory | 'all'>('all');
+  const [selectedCourseId, setSelectedCourseId] = useState<string>('');
+  const [adminTab, setAdminTab] = useState<'create' | 'manage'>('create');
+  const socketRef = useRef<Socket | null>(null);
+  const isRemoteUpdateRef = useRef(false);
+  
+  const [courses, setCourses] = useState<Course[]>(() => {
+    const savedCourses = localStorage.getItem('app_courses');
+    if (savedCourses) {
+      try {
+        return JSON.parse(savedCourses);
+      } catch (e) {
+        console.error('Failed to parse courses from localStorage', e);
+      }
+    }
+    return MOCK_COURSES;
+  });
+
+  const [registrations, setRegistrations] = useState<Registration[]>(() => {
+    const savedRegistrations = localStorage.getItem('app_registrations');
+    if (savedRegistrations) {
+      try {
+        return JSON.parse(savedRegistrations);
+      } catch (e) {
+        console.error('Failed to parse registrations from localStorage', e);
+      }
+    }
+    return MOCK_REGISTRATIONS;
+  });
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        try {
-          const userDocRef = doc(db, 'users', firebaseUser.uid);
-          const userDoc = await getDoc(userDocRef);
-          
-          let userData: User;
-          if (userDoc.exists()) {
-            userData = userDoc.data() as User;
-          } else {
-            // Create new user profile
-            const isAdmin = firebaseUser.email === 'happyevery0924@gmail.com';
-            userData = {
-              id: firebaseUser.uid,
-              name: firebaseUser.displayName || 'User',
-              email: firebaseUser.email || '',
-              role: isAdmin ? 'admin' : 'employee'
-            };
-            await setDoc(userDocRef, userData);
-          }
-          setCurrentUser(userData);
-        } catch (error) {
-          console.error("Error fetching user data:", error);
-        }
-      } else {
-        setCurrentUser(null);
-      }
-      setIsAuthReady(true);
+    if (!selectedCourseId && courses.length > 0) {
+      setSelectedCourseId(courses[0].id);
+    }
+  }, [courses, selectedCourseId]);
+
+  useEffect(() => {
+    const socket = io();
+    socketRef.current = socket;
+
+    socket.on('init_state', (state) => {
+      isRemoteUpdateRef.current = true;
+      if (state.courses) setCourses(state.courses);
+      if (state.registrations) setRegistrations(state.registrations);
+      if (state.currentUser) setCurrentUser(state.currentUser);
+      if (state.activeTab) setActiveTab(state.activeTab);
+      if (state.homeFilter) setHomeFilter(state.homeFilter);
+      if (state.selectedCourseId) setSelectedCourseId(state.selectedCourseId);
+      if (state.adminTab) setAdminTab(state.adminTab);
+      setTimeout(() => { isRemoteUpdateRef.current = false; }, 0);
     });
 
-    return () => unsubscribe();
+    socket.on('state_updated', (state) => {
+      isRemoteUpdateRef.current = true;
+      if (state.courses) setCourses(state.courses);
+      if (state.registrations) setRegistrations(state.registrations);
+      if (state.currentUser) setCurrentUser(state.currentUser);
+      if (state.activeTab) setActiveTab(state.activeTab);
+      if (state.homeFilter) setHomeFilter(state.homeFilter);
+      if (state.selectedCourseId) setSelectedCourseId(state.selectedCourseId);
+      if (state.adminTab) setAdminTab(state.adminTab);
+      setTimeout(() => { isRemoteUpdateRef.current = false; }, 0);
+    });
+
+    socket.on('request_initial_state', () => {
+      socket.emit('update_state', { courses, registrations, currentUser, activeTab, homeFilter, selectedCourseId, adminTab });
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   useEffect(() => {
-    if (!isAuthReady || !currentUser) return;
-
-    const unsubscribeCourses = onSnapshot(
-      collection(db, 'courses'),
-      (snapshot) => {
-        const coursesData: Course[] = [];
-        snapshot.forEach((doc) => {
-          coursesData.push({ id: doc.id, ...doc.data() } as Course);
-        });
-        setCourses(coursesData);
-      },
-      (error) => handleFirestoreError(error, OperationType.LIST, 'courses')
-    );
-
-    const unsubscribeRegistrations = onSnapshot(
-      collection(db, 'registrations'),
-      (snapshot) => {
-        const regsData: Registration[] = [];
-        snapshot.forEach((doc) => {
-          regsData.push({ id: doc.id, ...doc.data() } as Registration);
-        });
-        setRegistrations(regsData);
-      },
-      (error) => handleFirestoreError(error, OperationType.LIST, 'registrations')
-    );
-
-    return () => {
-      unsubscribeCourses();
-      unsubscribeRegistrations();
-    };
-  }, [isAuthReady, currentUser]);
-
-  const login = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (error) {
-      console.error("Login failed", error);
+    localStorage.setItem('app_courses', JSON.stringify(courses));
+    if (socketRef.current && !isRemoteUpdateRef.current) {
+      socketRef.current.emit('update_state', { courses });
     }
+  }, [courses]);
+
+  useEffect(() => {
+    localStorage.setItem('app_registrations', JSON.stringify(registrations));
+    if (socketRef.current && !isRemoteUpdateRef.current) {
+      socketRef.current.emit('update_state', { registrations });
+    }
+  }, [registrations]);
+
+  useEffect(() => {
+    if (socketRef.current && !isRemoteUpdateRef.current) {
+      socketRef.current.emit('update_state', { currentUser });
+    }
+  }, [currentUser]);
+
+  useEffect(() => {
+    if (socketRef.current && !isRemoteUpdateRef.current) {
+      socketRef.current.emit('update_state', { activeTab });
+    }
+  }, [activeTab]);
+
+  useEffect(() => {
+    if (socketRef.current && !isRemoteUpdateRef.current) {
+      socketRef.current.emit('update_state', { homeFilter });
+    }
+  }, [homeFilter]);
+
+  useEffect(() => {
+    if (socketRef.current && !isRemoteUpdateRef.current) {
+      socketRef.current.emit('update_state', { selectedCourseId });
+    }
+  }, [selectedCourseId]);
+
+  useEffect(() => {
+    if (socketRef.current && !isRemoteUpdateRef.current) {
+      socketRef.current.emit('update_state', { adminTab });
+    }
+  }, [adminTab]);
+
+  const addCourse = (course: Course) => {
+    setCourses(prev => [...prev, course]);
   };
 
-  const logout = async () => {
-    try {
-      await signOut(auth);
-    } catch (error) {
-      console.error("Logout failed", error);
-    }
+  const deleteCourse = (courseId: string) => {
+    setCourses(prev => prev.filter(c => c.id !== courseId));
   };
 
-  const addCourse = async (course: Course) => {
-    if (!currentUser) return;
-    try {
-      const courseRef = doc(db, 'courses', course.id);
-      await setDoc(courseRef, course);
-    } catch (error) {
-      handleFirestoreError(error, OperationType.CREATE, `courses/${course.id}`);
-    }
-  };
-
-  const deleteCourse = async (courseId: string) => {
-    if (!currentUser) return;
-    try {
-      await deleteDoc(doc(db, 'courses', courseId));
-    } catch (error) {
-      handleFirestoreError(error, OperationType.DELETE, `courses/${courseId}`);
-    }
-  };
-
-  const registerCourse = async (courseId: string, data: { department: string; employeeId: string; name: string }) => {
-    if (!currentUser) return;
-    const newRegId = `R${Date.now()}`;
+  const registerCourse = (courseId: string, data: { department: string; employeeId: string; name: string }) => {
     const newReg: Registration = {
-      id: newRegId,
+      id: `R${Date.now()}`,
       department: data.department,
       employeeId: data.employeeId,
       name: data.name,
       courseId,
       status: 'registered',
       timestamp: new Date().toISOString(),
-      userId: currentUser.id, // Add userId to match rules
     };
-    
-    try {
-      await setDoc(doc(db, 'registrations', newRegId), newReg);
-    } catch (error) {
-      handleFirestoreError(error, OperationType.CREATE, `registrations/${newRegId}`);
-    }
+    setRegistrations(prev => [...prev, newReg]);
   };
 
   return (
     <AppContext.Provider
       value={{
         currentUser,
-        isAuthReady,
-        login,
-        logout,
+        setCurrentUser,
+        activeTab,
+        setActiveTab,
+        homeFilter,
+        setHomeFilter,
+        selectedCourseId,
+        setSelectedCourseId,
+        adminTab,
+        setAdminTab,
         courses,
         addCourse,
         deleteCourse,

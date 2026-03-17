@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useAppContext } from '../AppContext';
-import { BookOpen, Users, CheckCircle, Clock } from 'lucide-react';
+import { BookOpen, Users, Clock } from 'lucide-react';
 
 const RegistrationListPage = () => {
-  const { courses, registrations } = useAppContext();
-  const [selectedCourseId, setSelectedCourseId] = useState<string>(courses[0]?.id || '');
+  const { courses, registrations, selectedCourseId, setSelectedCourseId } = useAppContext();
 
   const selectedCourse = courses.find(c => c.id === selectedCourseId);
   
